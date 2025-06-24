@@ -868,6 +868,147 @@ src="https://www.facebook.com/tr?id=1033442545012715&ev=PageView&noscript=1"
   color: var(--white);
 }
 
+/* NOVA SEÇÃO - TIPOS DE ESTABELECIMENTOS */
+.estabelecimentos-section {
+  background: linear-gradient(135deg, #1a4b6d, #0d283d);
+  padding: 5rem 1rem;
+  color: white;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.estabelecimentos-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 Q50,20 100,0 L100,100 Q50,80 0,100 Z" fill="rgba(255,255,255,0.05)"/></svg>');
+  background-size: cover;
+  opacity: 0.2;
+}
+
+.estabelecimentos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 25px;
+  max-width: 1100px;
+  margin: 3rem auto 0;
+}
+
+.estabelecimento-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 2rem 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.estabelecimento-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.estabelecimento-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--secondary);
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+  transform-origin: left;
+}
+
+.estabelecimento-card:hover::before {
+  transform: scaleX(1);
+}
+
+.estabelecimento-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1.2rem;
+  color: var(--secondary);
+  text-shadow: 0 2px 8px rgba(27, 167, 85, 0.4);
+  transition: all 0.3s ease;
+}
+
+.estabelecimento-card:hover .estabelecimento-icon {
+  transform: scale(1.15);
+  color: #ffd700;
+}
+
+.estabelecimento-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.plus-card {
+  background: rgba(27, 167, 85, 0.15);
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plus-icon {
+  font-size: 4rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1;
+}
+
+.plus-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-top: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .estabelecimentos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .estabelecimento-card {
+    padding: 1.5rem 1rem;
+    min-height: 170px;
+  }
+  
+  .estabelecimento-icon {
+    font-size: 2.8rem;
+  }
+  
+  .estabelecimento-title {
+    font-size: 1.2rem;
+  }
+  
+  .plus-icon {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .estabelecimentos-grid {
+    grid-template-columns: 1fr;
+    max-width: 350px;
+  }
+}
 
 
 </style>
@@ -950,6 +1091,63 @@ src="https://www.facebook.com/tr?id=1033442545012715&ev=PageView&noscript=1"
         <div class="benefit-icon">📊</div>
         <h3>Dashboard completo</h3>
         <p>Relatórios detalhados e filtros avançados</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOVA SEÇÃO - TIPOS DE ESTABELECIMENTOS -->
+<section class="estabelecimentos-section">
+  <div class="container">
+    <h2 class="section-title" style="color: white;">Nosso sistema é ideal para:</h2>
+    <p style="max-width: 800px; margin: 0 auto 2rem; font-size: 1.2rem; opacity: 0.9;">
+      O DataCerta foi desenvolvido para ajudar qualquer negócio que trabalhe com produtos perecíveis. Veja alguns dos estabelecimentos que já estão utilizando com sucesso:
+    </p>
+    
+    <div class="estabelecimentos-grid">
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">🛒</div>
+        <h3 class="estabelecimento-title">Mercados</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">💊</div>
+        <h3 class="estabelecimento-title">Farmácias</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">🐾</div>
+        <h3 class="estabelecimento-title">Petshops</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">🏗️</div>
+        <h3 class="estabelecimento-title">Construção</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">💄</div>
+        <h3 class="estabelecimento-title">Cosméticos</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">🍞</div>
+        <h3 class="estabelecimento-title">Padarias</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">🥩</div>
+        <h3 class="estabelecimento-title">Açougues</h3>
+      </div>
+      
+      <div class="estabelecimento-card">
+        <div class="estabelecimento-icon">🛍️</div>
+        <h3 class="estabelecimento-title">Mercearias</h3>
+      </div>
+      
+      <div class="estabelecimento-card plus-card">
+        <div class="plus-icon">+</div>
+        <div class="plus-text">E muito mais!</div>
       </div>
     </div>
   </div>
