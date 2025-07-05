@@ -167,7 +167,7 @@
       position: relative;
       cursor: pointer;
       padding: 1rem;
-      border: 2px solid #f4f4f4;
+      border: 2px solid #ddd;
       border-radius: 15px;
       transition: all 0.3s ease;
       background: white;
@@ -199,15 +199,23 @@
     .option .radio-custom {
       width: 24px;
       height: 24px;
-      border: 2px solid #f4f4f4;
+      border: 3px solid #999;
       border-radius: 50%;
       position: relative;
       transition: all 0.3s ease;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .option:hover .radio-custom {
+      border-color: #1ba755;
+      box-shadow: 0 3px 8px rgba(27, 167, 85, 0.2);
     }
 
     .option.selected .radio-custom {
       border-color: #1ba755;
       background: linear-gradient(45deg, #1ba755, #0d283d);
+      box-shadow: 0 3px 8px rgba(27, 167, 85, 0.3);
     }
 
     .option.selected .radio-custom::after {
@@ -218,7 +226,8 @@
       transform: translate(-50%, -50%);
       color: white;
       font-weight: bold;
-      font-size: 12px;
+      font-size: 14px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     .btn {
@@ -234,6 +243,18 @@
       position: relative;
       overflow: hidden;
       min-width: 150px;
+    }
+
+    .btn-voltar {
+      background: white;
+      color: #0d283d;
+      border: 2px solid #0d283d;
+      margin-right: 1rem;
+    }
+
+    .btn-voltar:hover {
+      background: #f4f4f4;
+      box-shadow: 0 10px 25px rgba(13, 40, 61, 0.2);
     }
 
     .btn::before {
@@ -420,6 +441,13 @@
     .resultado-alto {
       color: #e74c3c !important;
     }
+    
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
 
     @media (max-width: 768px) {
       .quiz-container {
@@ -441,6 +469,16 @@
       
       .option {
         padding: 0.8rem;
+      }
+      
+      .btn-container {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .btn-voltar {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
       }
     }
   </style>
@@ -481,7 +519,9 @@
             <span>Nunca</span>
           </label>
         </div>
-        <button type="button" class="btn" onclick="proximaPergunta(1)">Próxima →</button>
+        <div class="btn-container">
+          <button type="button" class="btn" onclick="proximaPergunta(1)">Próxima →</button>
+        </div>
       </div>
 
       <div class="pergunta" data-passo="2">
@@ -504,7 +544,10 @@
             <span>Não</span>
           </label>
         </div>
-        <button type="button" class="btn" onclick="proximaPergunta(2)">Próxima →</button>
+        <div class="btn-container">
+          <button type="button" class="btn btn-voltar" onclick="voltarPergunta(2)">← Voltar</button>
+          <button type="button" class="btn" onclick="proximaPergunta(2)">Próxima →</button>
+        </div>
       </div>
 
       <div class="pergunta" data-passo="3">
@@ -527,7 +570,10 @@
             <span>Não tenho problema com isso</span>
           </label>
         </div>
-        <button type="button" class="btn" onclick="proximaPergunta(3)">Próxima →</button>
+        <div class="btn-container">
+          <button type="button" class="btn btn-voltar" onclick="voltarPergunta(3)">← Voltar</button>
+          <button type="button" class="btn" onclick="proximaPergunta(3)">Próxima →</button>
+        </div>
       </div>
 
       <div class="pergunta" data-passo="4">
@@ -550,7 +596,10 @@
             <span>Não</span>
           </label>
         </div>
-        <button type="button" class="btn" onclick="proximaPergunta(4)">Próxima →</button>
+        <div class="btn-container">
+          <button type="button" class="btn btn-voltar" onclick="voltarPergunta(4)">← Voltar</button>
+          <button type="button" class="btn" onclick="proximaPergunta(4)">Próxima →</button>
+        </div>
       </div>
 
       <div class="pergunta" data-passo="5">
@@ -573,7 +622,10 @@
             <span>Não me interessa</span>
           </label>
         </div>
-        <button type="submit" class="btn">🎉 Ver meu diagnóstico</button>
+        <div class="btn-container">
+          <button type="button" class="btn btn-voltar" onclick="voltarPergunta(5)">← Voltar</button>
+          <button type="submit" class="btn">🎉 Ver meu diagnóstico</button>
+        </div>
       </div>
     </form>
 
@@ -692,6 +744,32 @@
           
           updateProgress(passoAtual + 1);
         }
+      }, 300);
+    }
+    
+    // Função para voltar para a pergunta anterior
+    function voltarPergunta(passoAtual) {
+      const atual = document.querySelector(`.pergunta[data-passo='${passoAtual}']`);
+      const anterior = document.querySelector(`.pergunta[data-passo='${passoAtual - 1}']`);
+      
+      if (!anterior) return;
+      
+      // Animação de saída para a direita
+      atual.style.transform = 'translateX(100%)';
+      atual.style.opacity = '0';
+      
+      setTimeout(() => {
+        atual.classList.remove('active');
+        anterior.classList.add('active');
+        anterior.style.transform = 'translateX(-100%)';
+        anterior.style.opacity = '0';
+        
+        setTimeout(() => {
+          anterior.style.transform = 'translateX(0)';
+          anterior.style.opacity = '1';
+        }, 50);
+        
+        updateProgress(passoAtual - 1);
       }, 300);
     }
 
