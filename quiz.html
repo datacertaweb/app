@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz DataCerta - Diagnóstico Interativo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0d283d 0%, #1ba755 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      overflow-x: hidden;
+    }
+
+    .quiz-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(13, 40, 61, 0.2);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(13, 40, 61, 0.1);
+    }
+
+    .quiz-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(27, 167, 85, 0.1), transparent);
+      transform: rotate(45deg);
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(45deg, #0d283d, #1ba755);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      animation: fadeInDown 1s ease-out;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+      animation: fadeInUp 1s ease-out 0.3s both;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #f4f4f4;
+      border-radius: 10px;
+      margin: 2rem 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(45deg, #0d283d, #1ba755);
+      border-radius: 10px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: progressShine 2s infinite;
+    }
+
+    @keyframes progressShine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .pergunta {
+      display: none;
+      animation: slideIn 0.6s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pergunta.active {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .question-number {
+      display: inline-block;
+      background: linear-gradient(45deg, #0d283d, #1ba755);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .question-text {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0d283d;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .option {
+      position: relative;
+      cursor: pointer;
+      padding: 1rem;
+      border: 2px solid #f4f4f4;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      background: white;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-weight: 500;
+      color: #0d283d;
+      transform: translateY(0);
+    }
+
+    .option:hover {
+      border-color: #1ba755;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(27, 167, 85, 0.2);
+    }
+
+    .option.selected {
+      border-color: #1ba755;
+      background: linear-gradient(45deg, rgba(27, 167, 85, 0.1), rgba(13, 40, 61, 0.05));
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(27, 167, 85, 0.3);
+    }
+
+    .option input[type="radio"] {
+      display: none;
+    }
+
+    .option .radio-custom {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #f4f4f4;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .option.selected .radio-custom {
+      border-color: #1ba755;
+      background: linear-gradient(45deg, #1ba755, #0d283d);
+    }
+
+    .option.selected .radio-custom::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #1ba755, #0d283d);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      min-width: 150px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(27, 167, 85, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .resultado {
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+
+    .resultado.show {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .resultado-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .resultado h3 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #0d283d;
+    }
+
+    .resultado p {
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .cta-button {
+      background: linear-gradient(45deg, #1ba755, #0d283d);
+      color: white;
+      padding: 1rem 2rem;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: inline-block;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease;
+    }
+
+    .cta-button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(27, 167, 85, 0.4);
+    }
+
+    .floating-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: float 6s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .quiz-step {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Cores específicas para os resultados */
+    .resultado-baixo {
+      color: #1ba755 !important;
+    }
+
+    .resultado-moderado {
+      color: #ffd700 !important;
+    }
+
+    .resultado-alto {
+      color: #e74c3c !important;
+    }
+
+    @media (max-width: 768px) {
+      .quiz-container {
+        padding: 1.5rem;
+        margin: 0.5rem;
+      }
+      
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .question-text {
+        font-size: 1.1rem;
+      }
+      
+      .options {
+        gap: 0.8rem;
+      }
+      
+      .option {
+        padding: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-particles"></div>
+  
+  <div class="quiz-container">
+    <div class="header">
+      <h1>🎯 Quiz Diagnóstico DataCerta</h1>
+      <p>Descubra o risco de perdas no seu comércio</p>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="quiz-step" id="quizStep">Pergunta 1 de 5</div>
+
+    <form id="quizForm">
+      <div class="pergunta active" data-passo="1">
+        <div class="question-number">Pergunta 1</div>
+        <div class="question-text">Você já teve que jogar produto no lixo porque estava vencido?</div>
+        <div class="options">
+          <label class="option">
+            <input type="radio" name="q1" value="2">
+            <div class="radio-custom"></div>
+            <span>Sim, mais de uma vez</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q1" value="1">
+            <div class="radio-custom"></div>
+            <span>Às vezes acontece</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q1" value="0">
+            <div class="radio-custom"></div>
+            <span>Nunca</span>
+          </label>
+        </div>
+        <button type="button" class="btn" onclick="proximaPergunta(1)">Próxima →</button>
+      </div>
+
+      <div class="pergunta" data-passo="2">
+        <div class="question-number">Pergunta 2</div>
+        <div class="question-text">Já teve que dar um produto de graça por causa da campanha "De Olho na Validade"?</div>
+        <div class="options">
+          <label class="option">
+            <input type="radio" name="q2" value="2">
+            <div class="radio-custom"></div>
+            <span>Sim, e foi constrangedor</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q2" value="1">
+            <div class="radio-custom"></div>
+            <span>Ainda não, mas tenho medo disso acontecer</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q2" value="0">
+            <div class="radio-custom"></div>
+            <span>Não</span>
+          </label>
+        </div>
+        <button type="button" class="btn" onclick="proximaPergunta(2)">Próxima →</button>
+      </div>
+
+      <div class="pergunta" data-passo="3">
+        <div class="question-number">Pergunta 3</div>
+        <div class="question-text">Acha difícil lembrar da validade de todos os produtos do seu comércio?</div>
+        <div class="options">
+          <label class="option">
+            <input type="radio" name="q3" value="2">
+            <div class="radio-custom"></div>
+            <span>Sim, é impossível lembrar de tudo</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q3" value="1">
+            <div class="radio-custom"></div>
+            <span>Anoto em folhas numa prancheta, caderno , mas esqueço às vezes</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q3" value="0">
+            <div class="radio-custom"></div>
+            <span>Não tenho problema com isso</span>
+          </label>
+        </div>
+        <button type="button" class="btn" onclick="proximaPergunta(3)">Próxima →</button>
+      </div>
+
+      <div class="pergunta" data-passo="4">
+        <div class="question-number">Pergunta 4</div>
+        <div class="question-text">Gostaria de ser alertado quando seus produtos vão vencer com antecedência?</div>
+        <div class="options">
+          <label class="option">
+            <input type="radio" name="q4" value="2">
+            <div class="radio-custom"></div>
+            <span>Sim, isso ajudaria muito</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q4" value="1">
+            <div class="radio-custom"></div>
+            <span>Talvez, depende da solução</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q4" value="0">
+            <div class="radio-custom"></div>
+            <span>Não</span>
+          </label>
+        </div>
+        <button type="button" class="btn" onclick="proximaPergunta(4)">Próxima →</button>
+      </div>
+
+      <div class="pergunta" data-passo="5">
+        <div class="question-number">Pergunta 5</div>
+        <div class="question-text">Se existisse uma solução que te enviasse alertas e mostrasse o que está prestes a vencer, você usaria?</div>
+        <div class="options">
+          <label class="option">
+            <input type="radio" name="q5" value="2">
+            <div class="radio-custom"></div>
+            <span>Com certeza</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q5" value="1">
+            <div class="radio-custom"></div>
+            <span>Se for fácil de usar</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q5" value="0">
+            <div class="radio-custom"></div>
+            <span>Não me interessa</span>
+          </label>
+        </div>
+        <button type="submit" class="btn">🎉 Ver meu diagnóstico</button>
+      </div>
+    </form>
+
+    <div class="resultado" id="resultado">
+      <div class="resultado-icon" id="resultadoIcon"></div>
+      <div id="diagnostico"></div>
+      <a href="https://datacertaweb.github.io/app/page.html" class="cta-button">🛡️ Quero proteger meu estoque</a>
+    </div>
+  </div>
+
+  <script>
+    // Criar partículas flutuantes
+    function createParticles() {
+      const container = document.querySelector('.floating-particles');
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // Atualizar barra de progresso
+    function updateProgress(step) {
+      const progress = (step / 5) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+      document.getElementById('quizStep').textContent = `Pergunta ${step} de 5`;
+    }
+
+    // Adicionar interatividade aos radio buttons
+    document.querySelectorAll('.option').forEach(option => {
+      option.addEventListener('click', function() {
+        const input = this.querySelector('input[type="radio"]');
+        const name = input.name;
+        
+        // Remover seleção anterior
+        document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+          radio.closest('.option').classList.remove('selected');
+        });
+        
+        // Adicionar seleção atual
+        this.classList.add('selected');
+        input.checked = true;
+        
+        // Efeito de ondulação
+        const ripple = document.createElement('div');
+        ripple.style.position = 'absolute';
+        ripple.style.borderRadius = '50%';
+        ripple.style.background = 'rgba(27, 167, 85, 0.3)';
+        ripple.style.transform = 'scale(0)';
+        ripple.style.animation = 'ripple 0.6s linear';
+        ripple.style.left = '50%';
+        ripple.style.top = '50%';
+        ripple.style.width = '20px';
+        ripple.style.height = '20px';
+        ripple.style.marginLeft = '-10px';
+        ripple.style.marginTop = '-10px';
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      });
+    });
+
+    // Adicionar animação de ripple
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    function proximaPergunta(passoAtual) {
+      const atual = document.querySelector(`.pergunta[data-passo='${passoAtual}']`);
+      const proxima = document.querySelector(`.pergunta[data-passo='${passoAtual + 1}']`);
+      const respostaSelecionada = atual.querySelector('input:checked');
+
+      if (!respostaSelecionada) {
+        // Destacar opções não selecionadas
+        atual.querySelectorAll('.option').forEach(option => {
+          option.style.animation = 'shake 0.5s ease-in-out';
+        });
+        
+        setTimeout(() => {
+          atual.querySelectorAll('.option').forEach(option => {
+            option.style.animation = '';
+          });
+        }, 500);
+        
+        return;
+      }
+
+      // Animação de saída
+      atual.style.transform = 'translateX(-100%)';
+      atual.style.opacity = '0';
+      
+      setTimeout(() => {
+        atual.classList.remove('active');
+        if (proxima) {
+          proxima.classList.add('active');
+          proxima.style.transform = 'translateX(100%)';
+          proxima.style.opacity = '0';
+          
+          setTimeout(() => {
+            proxima.style.transform = 'translateX(0)';
+            proxima.style.opacity = '1';
+          }, 50);
+          
+          updateProgress(passoAtual + 1);
+        }
+      }, 300);
+    }
+
+    // Adicionar animação de shake
+    const shakeStyle = document.createElement('style');
+    shakeStyle.textContent = `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+    `;
+    document.head.appendChild(shakeStyle);
+
+    // Função para processar o diagnóstico
+    function processarDiagnostico() {
+      let total = 0;
+      let todasRespondidas = true;
+      
+      // Verificar se todas as perguntas foram respondidas
+      for (let i = 1; i <= 5; i++) {
+        const resposta = document.querySelector(`input[name="q${i}"]:checked`);
+        if (!resposta) {
+          todasRespondidas = false;
+          break;
+        }
+        total += parseInt(resposta.value);
+      }
+
+      if (!todasRespondidas) {
+        const currentQuestion = document.querySelector('.pergunta.active');
+        if (currentQuestion) {
+          currentQuestion.querySelectorAll('.option').forEach(option => {
+            option.style.animation = 'shake 0.5s ease-in-out';
+          });
+          
+          setTimeout(() => {
+            currentQuestion.querySelectorAll('.option').forEach(option => {
+              option.style.animation = '';
+            });
+          }, 500);
+        }
+        return false;
+      }
+
+      // Gerar diagnóstico baseado na pontuação
+      let diagnostico = "";
+      let icon = "";
+
+      if (total <= 3) {
+        diagnostico = `
+          <h3 class="resultado-baixo">✅ Baixo risco de perdas</h3>
+          <p>Seu controle parece razoável, mas ainda há espaço para melhorar. Um único produto vencido pode gerar dor de cabeça desnecessária.</p>
+        `;
+        icon = "🟢";
+      } else if (total <= 7) {
+        diagnostico = `
+          <h3 class="resultado-moderado">⚠️ Risco moderado de perdas</h3>
+          <p>Você já viveu algumas situações delicadas. Estima-se que pode estar perdendo entre <strong>R$ 500 e R$ 1.000</strong> por ano.</p>
+        `;
+        icon = "🟠";
+      } else {
+        diagnostico = `
+          <h3 class="resultado-alto">🚨 Alto risco de prejuízo</h3>
+          <p>Seu comércio está vulnerável! Pode estar perdendo mais de <strong>R$ 1.500</strong> por ano só com produtos vencidos.</p>
+        `;
+        icon = "🔴";
+      }
+
+      // Mostrar resultado
+      mostrarResultado(diagnostico, icon);
+      return true;
+    }
+
+    function mostrarResultado(diagnostico, icon) {
+      const form = document.getElementById('quizForm');
+      const resultado = document.getElementById('resultado');
+      const progressBar = document.querySelector('.progress-bar');
+      const quizStep = document.querySelector('.quiz-step');
+      
+      // Ocultar formulário com animação
+      form.style.transform = 'scale(0.9)';
+      form.style.opacity = '0';
+      
+      setTimeout(() => {
+        form.style.display = 'none';
+        progressBar.style.display = 'none';
+        quizStep.style.display = 'none';
+        
+        // Mostrar resultado
+        document.getElementById('resultadoIcon').textContent = icon;
+        document.getElementById('diagnostico').innerHTML = diagnostico;
+        resultado.classList.add('show');
+        
+        // Confete para resultado
+        createConfetti();
+      }, 300);
+    }
+
+    // Event listener para o formulário
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      processarDiagnostico();
+    });
+
+    // Função para criar confete
+    function createConfetti() {
+      const colors = ['#0d283d', '#1ba755', '#ffd700', '#e74c3c', '#f4f4f4'];
+      
+      for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.position = 'fixed';
+        confetti.style.width = '10px';
+        confetti.style.height = '10px';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = '-10px';
+        confetti.style.zIndex = '1000';
+        confetti.style.borderRadius = '50%';
+        confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear`;
+        
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => {
+          confetti.remove();
+        }, 5000);
+      }
+    }
+
+    // Adicionar animação de confete
+    const confettiStyle = document.createElement('style');
+    confettiStyle.textContent = `
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(-100vh) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(confettiStyle);
+
+    // Inicializar
+    createParticles();
+    updateProgress(1);
+  </script>
+</body>
+</html>
